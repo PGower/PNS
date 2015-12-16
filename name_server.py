@@ -10,7 +10,7 @@ try:
 except ImportError:
     from commands import getoutput
 
-from dnslib import RR, QTYPE, RCODE, TXT, parse_time, A
+from dnslib import RR, QTYPE, RCODE, parse_time, A
 from dnslib.label import DNSLabel
 from dnslib.server import DNSServer, DNSHandler, BaseResolver, DNSLogger
 
@@ -37,7 +37,7 @@ LOG_HOOKS = False  # "Log hooks to enable (default: +request,+reply,+truncated,+
 LOG_PREFIX = False  # Log prefix (timestamp/handler/resolver)
 
 
-class ShellResolver(BaseResolver):
+class PNSResolver(BaseResolver):
     """
 
     """
@@ -65,7 +65,7 @@ class ShellResolver(BaseResolver):
         return reply
 
 if __name__ == '__main__':
-    resolver = ShellResolver(ORIGIN, TTL)
+    resolver = PNSResolver(ORIGIN, TTL)
     logger = DNSLogger(LOG, LOG_PREFIX)
 
     print("Starting Django Resolver (%s:%d) [%s]" % (LISTEN or "*", PORT, "UDP/TCP" if LISTEN_TCP else "UDP"))

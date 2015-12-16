@@ -28,3 +28,9 @@ class MappingSerializer(serializers.Serializer):
         instance.ip_address = validated_data.get('ip_address', instance.ip_address)
         instance.save()
         return instance
+
+
+class FullnameSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=10, min_length=2)
+    fullname = serializers.CharField(max_length=255)
+

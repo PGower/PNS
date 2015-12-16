@@ -3,4 +3,4 @@ Django<2.0
 Jinja2>=2.8
 django-jinja
 djangorestframework
-haystack
+django-haystack

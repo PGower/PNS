@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'django_jinja',
     'haystack',
     'rest_framework',
-    'endpoint'
+    'endpoint',
+    'interface',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -72,13 +73,6 @@ TEMPLATES = [
             'match_extension': '.j2',
             # 'match_regex': r'.*\.j2$',
             'globals': {
-                'human_diff': 'canvas_sync.jinja2.human_diff',
-                'human_diff_to_now': 'canvas_sync.jinja2.human_diff_to_now',
-                'format_date': 'canvas_sync.jinja2.format_date',
-                'format_datetime': 'canvas_sync.jinja2.format_datetime',
-                'format_time': 'canvas_sync.jinja2.format_time',
-                'humanize': 'canvas_sync.jinja2.humanize',
-                'quill': 'canvas_sync.jinja2.quill',
             },
             'auto_reload': DEBUG,
         },
@@ -159,6 +153,7 @@ HAYSTACK_CONNECTIONS = {
         'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
     },
 }
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
 
 # Logging
 LOGGING = {

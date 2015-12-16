@@ -1,0 +1,32 @@
+{% extends 'index.html.j2' %}
+
+{% block head %}
+<script src="{{static('js/typeahead.js')}}"></script>
+{% endblock %}
+
+{% block main %}
+<input id="name_search">
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+var autocomplete_engine = new Bloodhound({
+	remote: {
+		url: '/api/v1/search?q=@',
+		wildcard: '@'
+	},
+	queryTokenizer: Bloodhound.tokenizers.whitespace,
+  	datumTokenizer: Bloodhound.tokenizers.whitespace,
+  	identify: function(obj) {return obj['username']},
+})
+$('#name_search').typeahead({
+	minLength: 2,
+
+},
+{
+	name: 'RemoteUsernames',
+	source: autocomplete_engine
+})
+</script>
+{% endblock %}

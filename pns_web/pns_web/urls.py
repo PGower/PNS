@@ -18,6 +18,7 @@ from django.contrib import admin
 # import endpoint.urls
 
 urlpatterns = [
+    url(r'^', include('interface.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^api/v1/', include('endpoint.urls'))
 ]
