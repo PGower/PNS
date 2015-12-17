@@ -1,0 +1,3 @@
+instuctions.txt
+
+http://www.securevideo.com/blog/2014/06/03/chrome-35-on-windows-8-and-8-1-issue-launching-app/

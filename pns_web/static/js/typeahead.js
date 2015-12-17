@@ -1116,7 +1116,7 @@
             var css = {
                 wrapper: {
                     position: "relative",
-                    display: "inline-block"
+                    // display: "inline-block" // CHANGED BY PAUL: Stops input from collapsing.
                 },
                 hint: {
                     position: "absolute",

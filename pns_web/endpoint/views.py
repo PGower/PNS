@@ -52,9 +52,10 @@ class InfoForGeneric(APIView):
     def query(self, term, expired):
         raise NotImplemented
 
-    def get(self, request, term):
+    def get(self, request):
         errors = []
         response = {}
+        term = request.query_params.get('term')
         try:
             current = self.query(term, False).get()
         except Mapping.MultipleObjectsReturned:
