@@ -59,7 +59,7 @@ class InfoForGeneric(APIView):
         try:
             current = self.query(term, False).get()
         except Mapping.MultipleObjectsReturned:
-            current = self.query(term, False).order_by('created')[0]
+            current = self.query(term, False).order_by('-created')[0]
             errors.append('More then one address mapping was returned as the current mapping. The latest one is being used.')
         except Mapping.DoesNotExist:
             current = None
@@ -71,7 +71,7 @@ class InfoForGeneric(APIView):
             else:
                 response['current'] = None
 
-        history = self.query(term, True).order_by('created')
+        history = self.query(term, True).order_by('-created')
         if len(history) > 0:
             serialized_history = MappingSerializer(history, many=True)
             response['history'] = serialized_history.data
@@ -105,11 +105,15 @@ class NameSearch(APIView):
     def get(self, request):
         # import pdb;pdb.set_trace()
         q = request.query_params.get('q')
-        query = SearchQuerySet().autocomplete(text=q)
-        results = query.load_all()
-        results = FullnameSerializer(results, many=True)
-        response = {'results': results.data}
-        return Response(response)
+        if q == '!!preload':
+            results = Fullname.objects.all()
+            results = FullnameSerializer(results, many=True)
+            return Response({'results': results.data})
+        else:
+            query = SearchQuerySet().autocomplete(text=q)
+            results = query.load_all()
+            results = FullnameSerializer(results, many=True)
+            return Response({'results': results.data})
 
 
 class RealtimeUpdates(APIView):

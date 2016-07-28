@@ -1,7 +1,8 @@
 {% extends 'index.html.j2' %}
 
 {% block head %}
-<script src="{{static('js/typeahead.js')}}"></script>
+<link rel="stylesheet" type="text/css" href="{{static('css/selectize.bootstrap3.css')}}">
+<script src="{{static('js/selectize.min.js')}}"></script>
 <script src="{{static('js/handlebars.js')}}"></script>
 <script src="{{static('js/moment.js')}}"></script>
 {% endblock %}
@@ -9,15 +10,13 @@
 {% block main %}
 <form>
 	<div class="form-group">
-		<input class="form-control" id="name_search" type="text" placeholder="User Name Search"></input>
+		<select id="name_search" class="form-control" placeholder="Username or Fullname"></select>
 	</div>
 </form>
 
 <div id="table_target">
 	
 </div>
-
-
 
 
 {% endblock %}
@@ -33,7 +32,7 @@
 		<p>Computer Name: {{current.computer_name}}</p>
 		<p>IP Address: {{current.ip_address}}</p>
 		<p>Action: {{current.action}}</p>
-		<p>Age: {{#fromNow}}{{current.created}}{{/fromNow}}</p>
+		<p>Age: {{fromNow current.created}}</p>
 	</div>
 </div>
 
@@ -62,12 +61,12 @@
 					</td>
 					<td>{{this.computer_name}}</td>
 					<td>{{this.action}}</td>
-					<td>{{#fromNow}}{{this.created}}{{/fromNow}}</td>
+					<td>{{fromNow this.created}}</td>
 					<td>{{this.expired}}</td>
 				</tr>
 			{{else}}
-				<tr colspan='5'>
-					<td>There is no history data for this user.</td>
+				<tr>
+					<td colspan='5' class="bg-danger"><span class="center-block">There is no history data for this user.</span></td>
 				</tr>
 			{{/each}}
 		</tbody>
@@ -76,41 +75,118 @@
 </script>
 {% endraw %}
 
+{% raw %}
+<script id="option_template" type="text/x-handlebars-template">
+		<div>
+			<span class="username">{{username}}</span> - <span class="fullname">({{fullname}})</span>
+		</div>
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="display_template" type="text/x-handlebars-template">
+{{this.username}} - ({{this.fullname}})
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="notfound_template" type="text/x-handlebars-template">
+<div>Could not find any results for the query: {{query}}</div>
+</script>
+{% endraw %}
+
 <script>
-Handlebars.registerHelper('fromNow', function(context, options) {
-	console.log(context);
+Handlebars.registerHelper('fromNow', function(dateString) {
 	if (window.moment) {
-		return moment(context).fromNow();
+		return moment(dateString).fromNow();
 	} else {
-		return context;
+		return dateString;
 	}
 })
 
-var autocomplete_engine = new Bloodhound({
-	remote: {
-		url: '/api/v1/search?q=@',
-		wildcard: '@'
+// Handlebars Templates
+var results_table = Handlebars.compile($('#records_table_template').html());
+var option_template = Handlebars.compile($('#option_template').html());
+var display_template = Handlebars.compile($('#display_template').html());
+
+
+$('#name_search').selectize({
+	valueField: 'username',
+	labelField: 'fullname',
+	searchField: ['username', 'fullname'],
+	create: false,
+	render: {
+		option: function(item, escape) {
+			return option_template(item);
+		}
 	},
-	queryTokenizer: Bloodhound.tokenizers.whitespace,
-  	datumTokenizer: Bloodhound.tokenizers.whitespace,
-  	identify: function(obj) {return obj['username']},
-})
-$('#name_search').typeahead({
-	minLength: 2,
-},
-{
-	name: 'RemoteUsernames',
-	source: autocomplete_engine
+	load: function(query, callback) {
+		if (!window.name_search_preloaded) {
+			query = '!!preload'
+			window.name_search_preloaded = true
+		}
+		$.ajax({
+			url: "{{url('search')}}",
+			type: 'GET',
+			data: {
+				q: query,
+			},
+			error: function() {
+				callback();
+			},
+			success: function(res) {
+				console.log(res);
+				callback(res.results);
+			}
+		})
+	},
+	preload: true,
+	onChange: function(value){
+		console.log(value);
+		$.get("{{url('user_info')}}", {term: value}, function(data){$('#table_target').html(results_table(data));}, 'json');
+	}
+
 })
 
-var records_table_builder = function(data, textStatus, jqXHR) {
-	var template_source = $('#records_table_template').html();
-	var template = Handlebars.compile(template_source);
-	$('#table_target').html(template(data));
-}
 
-$('#name_search').bind('typeahead:select', function(ev, suggestion) {
-	$.get("{{url('user_info')}}", {term: suggestion.username}, records_table_builder, 'json');
-})
+
+// var records_table_builder = function(data, textStatus, jqXHR) {
+// 	$('#table_target').html(results_table(data));
+	
+// }
+
+// $('#name_search').bind('typeahead:select', function(ev, suggestion) {
+// 	$.get("{{url('user_info')}}", {term: suggestion.username}, records_table_builder, 'json');
+// })
+
+// var suggestion_wrapper = function(data) {
+// 	console.log(data);
+// 	console.log(suggestion_template(data));
+// 	return suggestion_template(data);
+// }
+
+// var autocomplete_engine = new Bloodhound({
+// 	remote: {
+// 		url: '/api/v1/search?q=@',
+// 		wildcard: '@',
+// 		transform: function(response) {console.log(response); if (response.results.length == 0) {response.results = null}; return response}
+// 	},
+// 	queryTokenizer: Bloodhound.tokenizers.whitespace,
+//   	datumTokenizer: Bloodhound.tokenizers.whitespace,
+//   	identify: function(obj) {return obj['username']},
+
+// })
+
+// $('#name_search').typeahead({
+// 	minLength: 2,
+// },
+// {
+// 	name: 'RemoteUsernames',
+// 	source: autocomplete_engine.ttAdapter(),
+// 	// display: typeahead_display_template,
+// 	// templates: {
+// 	// 	suggestion: function(data){return typeahead_suggestion_template(data)},
+// 	// }
+// })
 </script>
 {% endblock %}
